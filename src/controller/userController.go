@@ -5,7 +5,6 @@ import (
 	"gin_demo/src/entity"
 	"gin_demo/src/utils"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 	"log"
@@ -112,13 +111,31 @@ func Login(context *gin.Context) {
 	}
 
 	//发放token
-	token := uuid.New()
-
+	token, err := common.ReleaseToken(user)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{
+			"code": 500,
+			"msg":  "系统异常",
+		})
+		log.Println("token生成异常:", err)
+		return
+	}
 	context.JSON(http.StatusOK, gin.H{
 		"code": 200,
 		"msg":  "登陆成功",
 		"data": gin.H{
 			"token": token,
+		},
+	})
+}
+
+func Info(context *gin.Context) {
+	user, _ := context.Get("user")
+
+	context.JSON(http.StatusOK, gin.H{
+		"code": 200,
+		"data": gin.H{
+			"user": user,
 		},
 	})
 }
